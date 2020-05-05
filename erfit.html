@@ -1,0 +1,318 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Entropic Regression</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-17"><meta name="DC.source" content="erfit.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Entropic Regression</h1><!--introduction--><p>Abd AlRahman AlMomani Clarkson University 2018 <a href="mailto:aaalmoma@clarkson.edu">aaalmoma@clarkson.edu</a></p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Citation</a></li><li><a href="#2">Description</a></li><li><a href="#3">Inputs</a></li><li><a href="#5">Outputs</a></li><li><a href="#6">Function Body</a></li></ul></div><h2 id="1">Citation</h2><pre>To cite this code:
+[ 1 ] Abd AlRahman R. AlMomani, Jie Sun, and Erik Bollt. How Entropic
+      Regression Beats the Outliers Problem in Nonlinear System
+      Identification. ... Preprint: https://arxiv.org/pdf/1905.08061</pre><h2 id="2">Description</h2><p>S = erfit(Phi, Xdot): solve the inverse problem: given Xdot and Phi, find S such that Xdot = Phi*S. erfit returns a matrix S of coefficient for a linear regression of the responses in vector field Xdot as a linear combination of the basis functions in the matrix Phi.</p><h2 id="3">Inputs</h2><div><ul><li>Phi  : Nxd basis matrix (i.e. polynomial expansion of the state variable).</li><li>Xdot : Nxr vector field (derivative of the state variables).</li><li>options: Structure that has the erfit options. See eroptset.m</li></ul></div><h2 id="5">Outputs</h2><p>S : dxr coefficients matrix.</p><h2 id="6">Function Body</h2><pre class="codeinput"><span class="keyword">function</span> S = erfit(Phi, Xdot, varargin)
+
+<span class="keyword">if</span> (nargin &lt; 3)
+    options = eroptset();
+<span class="keyword">else</span>
+    options = varargin{1};
+<span class="keyword">end</span>
+
+<span class="comment">% Least squares fitting (svd, minimum energy)</span>
+lsfit  = @(ix,iy) pinv(Phi(:,ix))*Xdot(:,iy);
+
+dim = size(Xdot,2); [~,N] = size(Phi);
+
+<span class="comment">%Initialize the solution</span>
+S = zeros(N,dim);
+
+<span class="comment">% Start Entropic Regression</span>
+<span class="keyword">for</span> i=1:dim
+    <span class="comment">% default tolerence initialization</span>
+    tol = tolEstimator(Xdot(:,i),options);
+    <span class="comment">% For the ith dimension:</span>
+    IX = 1:N; <span class="comment">%Explore all the candidate functions</span>
+
+    <span class="comment">% Select the strong candidate functions from IX</span>
+    <span class="comment">% through the forward ER.</span>
+    IX = erForward(Phi,Xdot(:,i),IX,tol,options);
+
+    <span class="comment">% Eliminate the weak candidate functions from IX</span>
+    <span class="comment">% through the backward ER.</span>
+    IX = erBackward(Phi, Xdot(:,i), IX, tol, options);
+
+    <span class="comment">% Compute the Least squares solution for the selected functions.</span>
+    S(IX,i) = lsfit(IX,i);
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%   Forward Entropic Regression</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="keyword">function</span> IX = erForward(A,y,IXin, tol,options)
+val = inf; ix = []; IX = [];
+
+N = size(A,2);
+<span class="comment">% Activate parallel computations if requested</span>
+maxCores = options.useparallel*options.maxcores;
+
+<span class="keyword">while</span> val&gt;tol <span class="comment">%Start the forward ER</span>
+    IX = [IX,IXin(ix)]; <span class="comment">%Add the selected strong candidate.</span>
+    D = -inf(1,N);      <span class="comment">%Initialize mutual information vector</span>
+
+    <span class="keyword">parfor</span> ( i=1:N, maxCores )
+        <span class="keyword">if</span> ~ismember(IXin(i),IX) <span class="comment">%Don't recheck what already selected</span>
+            <span class="comment">% Find the extra information added by the ith candidate</span>
+            <span class="comment">% given the strong candidates selected so far</span>
+            D(i) = cmiKnn(A(:,[IX IXin(i)])*pinv(A(:,[IX IXin(i)]))*y,<span class="keyword">...</span>
+                         y,<span class="keyword">...</span>
+                         A(:,IX)*pinv(A(:,IX))*y,<span class="keyword">...</span>
+                         options); <span class="comment">%#ok</span>
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="comment">% Find the strongest candidate that have the maximum extra information</span>
+    [val,ix] = max(D);
+
+    <span class="comment">%If the maximum extra information (val) is more than the minimum</span>
+    <span class="comment">%accepted influnce (tol)... then the function will be added to the</span>
+    <span class="comment">%strong candidates (see IX = [IX,IXin(ix)]; above ). Otherwise,</span>
+    <span class="comment">%terminate the search.</span>
+<span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%   Backward Entropic Regression</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="keyword">function</span> IX = erBackward(A, y, IX, tol, options)
+val = -inf; ix = [];
+
+<span class="keyword">while</span> ( val &lt; tol ) <span class="comment">%Start the backward ER</span>
+    IX(ix) = [];           <span class="comment">%Eliminate the selected weak candidate</span>
+    D = inf(1,length(IX)); <span class="comment">%Initialize mutual information vector</span>
+    <span class="keyword">for</span> i=1:length(D)      <span class="comment">%For the ith strong candidate</span>
+        rem = setdiff(IX,IX(i)); <span class="comment">%find all other candidates except i</span>
+        <span class="comment">% Find the extra information added by the ith strong candidate</span>
+        <span class="comment">% given the all other strong candidates. (causation entropy).</span>
+        D(i) = cmiKnn(A(:,IX)*pinv(A(:,IX))*y,y,<span class="keyword">...</span>
+                     A(:,rem)*pinv(A(:,rem))*y,<span class="keyword">...</span>
+                     options);
+    <span class="keyword">end</span>
+    <span class="comment">% Find the weakest candidate that have the minimum extra information</span>
+    [val,ix] = min(D);
+
+    <span class="comment">%If the minimum extra information (val) is less than the minimum</span>
+    <span class="comment">%accepted influnce (tol)... then the function will be removed from the</span>
+    <span class="comment">%strong candidates (see IX(ix) = []; above ), because that means</span>
+    <span class="comment">%the function is too weak and has no significant influnce compared to</span>
+    <span class="comment">%the other candidates. Otherwise, that if val&gt;tol, that mean the</span>
+    <span class="comment">%weakest candidate is strong, and have significant influnce, So,</span>
+    <span class="comment">%terminate the backward step.</span>
+<span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in erfit (line 49)
+dim = size(Xdot,2); [~,N] = size(Phi);
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Entropic Regression
+%
+% Abd AlRahman AlMomani
+% Clarkson University
+% 2018
+% aaalmoma@clarkson.edu
+
+
+%% Citation
+%  To cite this code:
+%  [ 1 ] Abd AlRahman R. AlMomani, Jie Sun, and Erik Bollt. How Entropic 
+%        Regression Beats the Outliers Problem in Nonlinear System 
+%        Identification. ... Preprint: https://arxiv.org/pdf/1905.08061
+%        
+%% Description
+% S = erfit(Phi, Xdot): solve the inverse problem:
+% given Xdot and Phi, find S such that Xdot = Phi*S.
+% erfit returns a matrix S of coefficient for a linear regression of 
+% the responses in vector field Xdot as a linear combination of the 
+% basis functions in the matrix Phi. 
+% 
+
+
+%% Inputs
+%%
+%
+% * Phi  : Nxd basis matrix (i.e. polynomial expansion of the state variable).
+% * Xdot : Nxr vector field (derivative of the state variables).
+% * options: Structure that has the erfit options. See eroptset.m
+%
+
+%% Outputs
+% S : dxr coefficients matrix.
+
+%% Function Body
+%
+%%
+function S = erfit(Phi, Xdot, varargin)
+
+if (nargin < 3)
+    options = eroptset();
+else
+    options = varargin{1};
+end
+
+% Least squares fitting (svd, minimum energy)
+lsfit  = @(ix,iy) pinv(Phi(:,ix))*Xdot(:,iy);
+
+dim = size(Xdot,2); [~,N] = size(Phi);
+
+%Initialize the solution
+S = zeros(N,dim);
+
+% Start Entropic Regression
+for i=1:dim
+    % default tolerence initialization
+    tol = tolEstimator(Xdot(:,i),options);
+    % For the ith dimension:
+    IX = 1:N; %Explore all the candidate functions
+    
+    % Select the strong candidate functions from IX
+    % through the forward ER.
+    IX = erForward(Phi,Xdot(:,i),IX,tol,options);
+    
+    % Eliminate the weak candidate functions from IX
+    % through the backward ER.
+    IX = erBackward(Phi, Xdot(:,i), IX, tol, options);
+
+    % Compute the Least squares solution for the selected functions.
+    S(IX,i) = lsfit(IX,i);
+end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Forward Entropic Regression
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function IX = erForward(A,y,IXin, tol,options)
+val = inf; ix = []; IX = [];
+
+N = size(A,2);
+% Activate parallel computations if requested
+maxCores = options.useparallel*options.maxcores;
+
+while val>tol %Start the forward ER
+    IX = [IX,IXin(ix)]; %Add the selected strong candidate.
+    D = -inf(1,N);      %Initialize mutual information vector
+
+    parfor ( i=1:N, maxCores )
+        if ~ismember(IXin(i),IX) %Don't recheck what already selected
+            % Find the extra information added by the ith candidate 
+            % given the strong candidates selected so far
+            D(i) = cmiKnn(A(:,[IX IXin(i)])*pinv(A(:,[IX IXin(i)]))*y,...
+                         y,...
+                         A(:,IX)*pinv(A(:,IX))*y,...
+                         options); %#ok
+        end
+    end
+
+    % Find the strongest candidate that have the maximum extra information
+    [val,ix] = max(D);
+
+    %If the maximum extra information (val) is more than the minimum
+    %accepted influnce (tol)... then the function will be added to the
+    %strong candidates (see IX = [IX,IXin(ix)]; above ). Otherwise,
+    %terminate the search.
+end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Backward Entropic Regression
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function IX = erBackward(A, y, IX, tol, options)
+val = -inf; ix = [];
+
+while ( val < tol ) %Start the backward ER
+    IX(ix) = [];           %Eliminate the selected weak candidate
+    D = inf(1,length(IX)); %Initialize mutual information vector
+    for i=1:length(D)      %For the ith strong candidate
+        rem = setdiff(IX,IX(i)); %find all other candidates except i
+        % Find the extra information added by the ith strong candidate 
+        % given the all other strong candidates. (causation entropy). 
+        D(i) = cmiKnn(A(:,IX)*pinv(A(:,IX))*y,y,...
+                     A(:,rem)*pinv(A(:,rem))*y,...
+                     options);
+    end
+    % Find the weakest candidate that have the minimum extra information
+    [val,ix] = min(D);
+    
+    %If the minimum extra information (val) is less than the minimum
+    %accepted influnce (tol)... then the function will be removed from the
+    %strong candidates (see IX(ix) = []; above ), because that means 
+    %the function is too weak and has no significant influnce compared to
+    %the other candidates. Otherwise, that if val>tol, that mean the 
+    %weakest candidate is strong, and have significant influnce, So,
+    %terminate the backward step.
+end
+end
+##### SOURCE END #####
+--></body></html>
